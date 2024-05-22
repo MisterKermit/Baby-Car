@@ -122,20 +122,18 @@ if (yValue > yRestMax) {
 
 //Joystick Steering Control
 if ((xValue < xRestMax) && (xValue > xRestMin) && (digitalRead(ForwardButton) == LOW) && (digitalRead(RightButton) == LOW) && (digitalRead(LeftButton) == LOW) && (digitalRead(BackButton) == LOW)) {
-   if ((RealLinacPos < LinacRestMax) && (RealLinacPos > LinacRestMin)) {
-   digitalWrite(LinacA, LOW);
-   digitalWrite(LinacB, LOW);
-   }
-     else if (RealLinacPos < 512) {
-     digitalWrite(LinacA, LOW);
-     digitalWrite(LinacB, HIGH);
-     analogWrite(ENA, 255);
-   }
-       else if (RealLinacPos > 512) {
-       digitalWrite(LinacA, HIGH);
-       digitalWrite(LinacB, LOW);
-       analogWrite(ENA, 255);
-   }                                        //End of Linear Actuator No Input Commands
+  if ((RealLinacPos < LinacRestMax) && (RealLinacPos > LinacRestMin)) {
+    digitalWrite(LinacA, LOW);
+    digitalWrite(LinacB, LOW);
+  } else if (RealLinacPos < 512) {
+    digitalWrite(LinacA, LOW);
+    digitalWrite(LinacB, HIGH);
+    analogWrite(ENA, 255);
+  } else if (RealLinacPos > 512) {
+    digitalWrite(LinacA, HIGH);
+    digitalWrite(LinacB, LOW);
+    analogWrite(ENA, 255);
+  }                                        //End of Linear Actuator No Input Commands
 } 
 else if ((xValue > RealLinacPos) && (xValue > xRestMax)) {
    digitalWrite(LinacA, LOW);
@@ -175,7 +173,8 @@ if (Forward == HIGH) {
        digitalWrite(LinacA, LOW);
        digitalWrite(LinacB, HIGH);
        analogWrite(ENA, 255);
-  }}
+    }
+  }
     else if (Left == HIGH) {
       digitalWrite(motor1a, LOW);
        analogWrite(motor1b, ButtonMotorSpeed); //WIP

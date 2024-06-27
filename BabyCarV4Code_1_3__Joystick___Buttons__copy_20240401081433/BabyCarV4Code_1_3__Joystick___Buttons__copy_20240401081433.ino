@@ -4,14 +4,14 @@
 #define LinacPosPin A2
 #define Potentiometer A3
 
-/*TODO: pound define all the pins for ultrasonic Trig and Echo
-#define left_Trig
-#define right_Trig
-#define front_Trig
-#define left_Echo
-#define right_Echo
-#define front_Echo
-*/
+//TODO: pound define all the pins for ultrasonic Trig and Echo
+#define left_Trig 24
+// #define right_Trig
+// #define front_Trig
+#define left_Echo 22
+// #define right_Echo
+// #define front_Echo
+
 int xValue = 0;
 int yValue = 0;
 
@@ -45,9 +45,9 @@ int distance2;
 //Baby Car 2 Head Array Ultrasonic Setup
 //Todo: enter in values for pin locations in setup
 
-const int left_Trig, right_Trig, front_Trig;
+// const int left_Trig, right_Trig, front_Trig;
 
-const int left_Echo, right_Echo, front_Echo;
+// const int left_Echo, right_Echo, front_Echo;
 
 unsigned long left_duration, right_duration, front_duration;
 
@@ -65,7 +65,7 @@ int chosen_index;
 int UltrasoundButton = 36;
 
 //Misc Setup
-int Potentiometer = A3;
+// int Potentiometer = A3;
 
 //Killswitch Setup
 int StopButton = 35;
@@ -108,12 +108,12 @@ void setup() {
 
   //Head array ultrasonic setup
   pinMode(left_Trig, OUTPUT);
-  pinMode(right_Trig, OUTPUT);
-  pinMode(front_Trig, OUTPUT);
+  // pinMode(right_Trig, OUTPUT);
+  // pinMode(front_Trig, OUTPUT);
 
   pinMode(left_Echo, INPUT);
-  pinMode(right_Echo, INPUT);
-  pinMode(front_Echo, INPUT);
+  // pinMode(right_Echo, INPUT);
+  // pinMode(front_Echo, INPUT);
   
 
   //Misc
@@ -158,12 +158,13 @@ int determine_distance(int TriggerPin, int EchoPin) {
 
 int find_index(int array[], int value) {
   int index = 0;
-  for (int i; i < sizeOf(array); i++) {
+  for (int i; i < sizeof(array); i++) {
     if (array[i] == value) {
-      return index
+      return index;
     }
-    index++;
+    index += 1;
   }
+  return index;
 }
 
 void loop() {
@@ -173,8 +174,8 @@ void loop() {
   yValue = analogRead(VRYPIN);
   //  Serial.print("x = ");
   //  Serial.println(xValue);
-  Serial.print(", y = ");
-  Serial.println(yValue);
+  // Serial.print(", y = ");
+  // Serial.println(yValue);
 
   int MaxMotorSpeed = map(analogRead(Potentiometer), 0, 1023, 25, 255);  //last number value is max motor speed
   int NegativeyValue = abs(yValue - 612);
@@ -183,7 +184,7 @@ void loop() {
 
   RealLinacPos = analogRead(LinacPosPin);
   //Serial.print("Linear Actuator Position:");
-  Serial.println(RealLinacPos);
+  // Serial.println(RealLinacPos);
   //Serial.println(NegativeyValue);
 
   //Motor Controls
@@ -281,31 +282,40 @@ void loop() {
   
   //calculate distances of all 3 sensors
   distance_array[0] = determine_distance(left_Trig, left_Echo);
-  distance_array[1] = determine_distance(right_Trig, right_Echo);
-  distance_array[2] = determine_distance(front_Trig, front_Echo);
+  Serial.println(distance_array[0]);
+  // distance_array[1] = determine_distance(right_Trig, right_Echo);
+  // distance_array[2] = determine_distance(front_Trig, front_Echo);
+
 
   chosen_index = find_index(distance_array, max(max(distance_array[0], distance_array[1]), distance_array[2]));
-
+  Serial.println(max(max(distance_array[0], distance_array[1]), distance_array[2]));
+  Serial.println(chosen_index);
+  
   switch(chosen_index) {
     case 0:
-      if ((chosen_index <= 35) && (digitalRead(UltrasoundButton) == 1)) {
-        prox_left = true;
+      if ((chosen_index <= 35) ) {
+        prox_Left = true;
       }
     case 1:
      if ((chosen_index <= 35) && (digitalRead(UltrasoundButton) == 1)) {
-        prox_right = true;
+        prox_Right = true;
      }
     case 2:
       if ((chosen_index <= 35) && (digitalRead(UltrasoundButton) == 1)) {
-        prox_front = true;
+        prox_Front = true;
       }
     default:
-      prox_left = prox_right = prox_front = false;
+      prox_Left = prox_Right = prox_Front = false;
       break;
   }
-  Serial.println(prox_right);
-  Serial.println(prox_left);
-  Serial.println(prox_front);
+  // Serial.println(prox_Right);
+  if (prox_Left) {
+    Serial.println("Left detect");
+  } else {
+    Serial.println("No Left");
+  }
+  // Serial.println(prox_Left);
+  // Serial.println(prox_Front);
     
   if ((distance1 <= 35) && (digitalRead(UltrasoundButton) == 1)) {
     ProxFront = 1;
@@ -338,6 +348,6 @@ void loop() {
     digitalWrite(StopLED, LOW);
   }
 
-  Serial.println(duration1);
+  // Serial.println(duration1);
 }
 

@@ -160,11 +160,13 @@ int find_index(int array[], int value) {
   int index = 0;
   for (int i; i < sizeof(array); i++) {
     if (array[i] == value) {
-      return index;
+      if (array[i] <= 35) {
+        return index;
+      }
     }
     index += 1;
   }
-  return index;
+  return 3;
 }
 
 void loop() {
@@ -293,17 +295,21 @@ void loop() {
   
   switch(chosen_index) {
     case 0:
-      if ((chosen_index <= 35) ) {
+      if ((distance_array[0] <= 35)) {
         prox_Left = true;
       }
+
+      break;
     case 1:
-     if ((chosen_index <= 35) && (digitalRead(UltrasoundButton) == 1)) {
+     if ((distance_array[1] <= 35) && (digitalRead(UltrasoundButton) == 1)) {
         prox_Right = true;
      }
+     break;
     case 2:
-      if ((chosen_index <= 35) && (digitalRead(UltrasoundButton) == 1)) {
+      if ((distance_array[2] <= 35) && (digitalRead(UltrasoundButton) == 1)) {
         prox_Front = true;
       }
+      break;
     default:
       prox_Left = prox_Right = prox_Front = false;
       break;

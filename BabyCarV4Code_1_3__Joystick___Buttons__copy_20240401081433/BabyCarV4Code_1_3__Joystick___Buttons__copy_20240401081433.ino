@@ -249,7 +249,8 @@ void loop() {
   }
 
   //Button Motor control + Head Array
-  if ((digitalRead(F_Button) == HIGH || digitalRead(R_Button) == HIGH || digitalRead(L_Button) == HIGH) && (StopStatus == 0) && ProxFront == 0) {
+  //Put proxFront == 1 when front prox is put in place
+  if ((digitalRead(F_Button) == HIGH || digitalRead(R_Button) == HIGH || digitalRead(L_Button) == HIGH) && (StopStatus == 0)) {
     analogWrite(motor1a, CurrentButtonSpeed);
     digitalWrite(motor1b, LOW);
     if (CurrentButtonSpeed < MaxMotorSpeed) {

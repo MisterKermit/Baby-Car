@@ -2,3 +2,4 @@
 arduino
 -----
 WIP - Linear actuator control
+    - Head array input

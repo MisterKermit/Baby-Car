@@ -220,7 +220,7 @@ void loop() {
   // Serial.println(yValue);
 
   int MaxMotorSpeed = map(analogRead(Potentiometer), 0, 1023, 25, 150);  //last number value is max motor speed
-  Serial.println(MaxMotorSpeed);
+  // Serial.println(MaxMotorSpeed);
   int NegativeyValue = abs(yValue - 612);
   int PositiveyValue = (yValue - 512);
 
@@ -250,7 +250,7 @@ void loop() {
 
   //Button Motor control + Head Array
   //Put proxFront == 1 when front prox is put in place
-  if ((digitalRead(F_Button) == HIGH || digitalRead(R_Button) == HIGH || digitalRead(L_Button) == HIGH) && (StopStatus == 0)) {
+  if ((digitalRead(F_Button) == HIGH || digitalRead(R_Button) == HIGH || digitalRead(L_Button) == HIGH) && ((StopStatus == 0) && (ProxFront == 0))) {
     analogWrite(motor1a, CurrentButtonSpeed);
     digitalWrite(motor1b, LOW);
     if (CurrentButtonSpeed < MaxMotorSpeed) {
@@ -333,13 +333,13 @@ void loop() {
   // Reads the echoPin, returns the sound wave travel time in microseconds
 
   // Calculating the distance
-  // distance1 = determine_distance(Ultra1Trig, Ultra1Echo); 
+  distance1 = determine_distance(Ultra1Trig, Ultra1Echo); 
   distance2 = determine_distance(Ultra2Trig, Ultra2Echo);
   // Serial.println(distance2);
 
   // Prints the distance on the Serial Monitor
   //  Serial.print("Distance1: ");
-  //  Serial.println(distance1);
+   Serial.println(distance1);
 
 
   // digitalWrite(Ultra2Trig, LOW);
@@ -407,7 +407,7 @@ void loop() {
   // }
   // Serial.println(prox_Left);
   // Serial.println(prox_Front);
-    
+
   if ((distance1 <= 35) && (digitalRead(UltrasoundButton) == 1)) {
     ProxFront = 1;
   } else {

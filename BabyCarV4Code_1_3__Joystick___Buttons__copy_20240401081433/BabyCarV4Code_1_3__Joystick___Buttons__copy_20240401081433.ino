@@ -247,7 +247,7 @@ void loop() {
     digitalWrite(motor2a, LOW);
     digitalWrite(motor2b, LOW);
   }
-
+  // Serial.println(ProxBack);
   //Button Motor control + Head Array
   //Put proxFront == 1 when front prox is put in place
   if ((digitalRead(F_Button) == HIGH || digitalRead(R_Button) == HIGH || digitalRead(L_Button) == HIGH) && ((StopStatus == 0) && (ProxFront == 0))) {
@@ -339,7 +339,7 @@ void loop() {
 
   // Prints the distance on the Serial Monitor
   //  Serial.print("Distance1: ");
-   Serial.println(distance1);
+  //  Serial.println(distance1);
 
 
   // digitalWrite(Ultra2Trig, LOW);
@@ -407,18 +407,25 @@ void loop() {
   // }
   // Serial.println(prox_Left);
   // Serial.println(prox_Front);
+  Serial.println(digitalRead(UltrasoundButton));
+  // Serial.println(digitalRead(HA_Button));
+  if (digitalRead(UltrasoundButton) == 1) {
+    if (distance1 <= 35) {
+      ProxFront = 1;
+    } else {
+      ProxFront = 0;
+    }
 
-  if ((distance1 <= 35) && (digitalRead(UltrasoundButton) == 1)) {
-    ProxFront = 1;
+    if (distance2 <= 45) {
+      ProxBack = 1;
+    } else {
+      ProxBack = 0;
+    }
   } else {
-    ProxFront = 0;
+    ProxBack = NULL;
+    ProxFront = NULL;
   }
-
-  if ((distance2 <= 45) && (digitalRead(UltrasoundButton) == 1)) {
-    ProxBack = 1;
-  } else {
-    ProxBack = 0;
-  }
+  
 
 
 

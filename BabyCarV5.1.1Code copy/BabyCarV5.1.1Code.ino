@@ -72,6 +72,19 @@ int ProxBack;
 long duration2;
 int distance2;
 
+int ForwardButton = 35;
+int RightButton = 37;
+int LeftButton = 39;
+int BackButton = 41;
+
+int Forward;
+int Right;
+int Left;
+int Back;
+
+int ButtonMotorSpeed;
+int i;
+
 //change values
 // int ultra_left_trig = 
 // int ultra_left_echo = 
@@ -104,6 +117,7 @@ int LinacExtendMin;
 
 int yRestMin;
 int yRestMax;
+  
 
 class Ultrasound {
   private:
@@ -157,6 +171,9 @@ class Ultrasound {
     } 
   };
 
+Ultrasound ultra_front(Ultra1Echo, Ultra1Trig);
+Ultrasound ultra_back(Ultra2Echo, Ultra2Trig);
+
 void setup() {
   //Motors
   pinMode(motor1a, OUTPUT);
@@ -186,12 +203,22 @@ void setup() {
   pinMode(StopLED, OUTPUT);
   StopStatus = 0;
 
+  //Buttons
+  pinMode(ForwardButton, INPUT);
+  pinMode(RightButton, INPUT);
+  pinMode(LeftButton, INPUT);
+  pinMode(BackButton, INPUT);
+
   xRestMin = 375;
   xRestMax = 455;
   LinacRestMin = 415;
   LinacRestMax = 425;
   LinacExtendMax = 1020;
   LinacExtendMin = 4;
+
+ 
+
+  // Ultrasound my_ultrasounds[] = {ultra_front, ultra_back};
 
   yRestMin = 512;
   yRestMax = 650;
@@ -200,6 +227,30 @@ void setup() {
   Serial.begin(9600);
 }
 
+int get_distance(Ultrasound sensor) {
+  // float ultra_distance;
+  if (digitalRead(UltrasoundButton) == 1) {
+    if (sensor.proximity_fb()) {
+      if (i == 0) {
+        ProxFront = 1;
+        return ProxFront;
+      } else {
+        ProxBack = 1;
+        return ProxBack;
+      }
+    } else {
+      if (i == 0) {
+        ProxFront = 0;
+        return ProxFront;
+      } else {
+        ProxBack = 0;
+        return ProxBack;
+      }
+    }
+  } else {
+    return 0;
+  }
+}
 
 void loop() {
 
@@ -208,8 +259,8 @@ void loop() {
   yValue = analogRead(VRYPIN);
 //  Serial.print("x = ");
 //  Serial.println(xValue);
-  Serial.print(", y = ");
-  Serial.println(yValue);
+  // Serial.print(", y = ");
+  // Serial.println(yValue);
 
   int MaxMotorSpeed = map(analogRead(Potentiometer), 0, 1023, 25, 255); //last number value is max motor speed
   int NegativeyValue = abs(yValue - 612);
@@ -218,54 +269,120 @@ void loop() {
 
   RealLinacPos = analogRead(LinacPosPin);
   //Serial.print("Linear Actuator Position:");
-  Serial.println(RealLinacPos);
+  // Serial.println(RealLinacPos);
   //Serial.println(NegativeyValue);
+  Forward = digitalRead(ForwardButton);
+  Right = digitalRead(RightButton);
+  Left = digitalRead(LeftButton);
+  Back = digitalRead(BackButton);
 
-  //Motor Controls
-  if ((yValue > yRestMax) && (ProxFront == 0) && (StopStatus == 0)) {
-    digitalWrite(motor1b, LOW);
-    analogWrite(motor1a, map(PositiveyValue, 0, 512, 0, MaxMotorSpeed));
-  } else if ((yValue < yRestMin) && (ProxBack == 0) && (StopStatus == 0)) {
-    analogWrite(motor1b, map(NegativeyValue, 0, 612, 0, MaxMotorSpeed));
-    digitalWrite(motor1a, LOW);
-  } else {
-    digitalWrite(motor1a, LOW);
-    digitalWrite(motor1b, LOW);
-    digitalWrite(motor2a, LOW);
-    digitalWrite(motor2b, LOW);
-  }
+  // Serial.println(Forward);
 
-  //Steering Controls
-  if ((xValue < xRestMax) && (xValue > xRestMin) && (StopStatus == 0)) {
-    if ((RealLinacPos < LinacRestMax) && (RealLinacPos > LinacRestMin)){
-      digitalWrite(LinacA, LOW);
-    digitalWrite(LinacB, LOW);
-  }
-  else if (RealLinacPos < 415) {
+  //Joystick Motor Controls
+if (yValue > yRestMax) {
+   digitalWrite(motor1a, LOW);
+   analogWrite(motor1b, map(PositiveyValue,0,512,0,MaxMotorSpeed));
+   digitalWrite(motor2a, LOW);
+   analogWrite(motor2b, map(PositiveyValue,0,512,0,MaxMotorSpeed));
+} else if (yValue < yRestMin) {
+     analogWrite(motor1a, map(NegativeyValue,0,512,0,MaxMotorSpeed));
+     digitalWrite(motor1b, LOW);
+     analogWrite(motor2a, map(NegativeyValue,0,512,0,MaxMotorSpeed));
+     digitalWrite(motor2b, LOW);
+     }
+
+  //Joystick Steering Controls
+  if ((xValue < xRestMax) && (xValue > xRestMin) && (digitalRead(ForwardButton) == LOW) && (digitalRead(RightButton) == LOW) && (digitalRead(LeftButton) == LOW) && (digitalRead(BackButton) == LOW)) {
+    if ((RealLinacPos < LinacRestMax) && (RealLinacPos > LinacRestMin)) {
     digitalWrite(LinacA, LOW);
-    digitalWrite(LinacB, HIGH);
-    analogWrite(ENA, 255);
-  }
-  else if (RealLinacPos > 415) {
+    digitalWrite(LinacB, LOW);
+    }
+      else if (RealLinacPos < 512) {
+      digitalWrite(LinacA, LOW);
+      digitalWrite(LinacB, HIGH);
+      analogWrite(ENA, 255);
+    }
+        else if (RealLinacPos > 512) {
+        digitalWrite(LinacA, HIGH);
+        digitalWrite(LinacB, LOW);
+        analogWrite(ENA, 255);
+    }                                        //End of Linear Actuator No Input Commands
+  } 
+else if ((xValue > RealLinacPos) && (xValue > xRestMax)) {
+   digitalWrite(LinacA, LOW);
+   digitalWrite(LinacB, HIGH);
+   analogWrite(ENA, 255);
+   } 
+    else if ((xValue < RealLinacPos) && (xValue < xRestMin)) {
     digitalWrite(LinacA, HIGH);
     digitalWrite(LinacB, LOW);
-    analogWrite(ENA, 255);
-  }
-}
-                                        //End of Linear Actuator No Input Commands
-else if ((xValue > RealLinacPos) && (xValue > xRestMax) && (StopStatus == 0)) {
-  digitalWrite(LinacA, HIGH);
-  digitalWrite(LinacB, LOW);
-}
-else if ((xValue < RealLinacPos) && (xValue < xRestMin) && (StopStatus == 0)) {
-  digitalWrite(LinacA, LOW);
-  digitalWrite(LinacB, HIGH);
-}
-else {
-  digitalWrite(LinacA, LOW);
-  digitalWrite(LinacB, LOW);
-}
+     analogWrite(ENA, 255);
+     }
 
+                                       //End of Linear Actuator No Input Commands
+// else if ((xValue > RealLinacPos) && (xValue > xRestMax) && (StopStatus == 0)) {
+//   digitalWrite(LinacA, HIGH);
+//   digitalWrite(LinacB, LOW);
+// }
+// else if ((xValue < RealLinacPos) && (xValue < xRestMin) && (StopStatus == 0)) {
+//   digitalWrite(LinacA, LOW);
+//   digitalWrite(LinacB, HIGH);
+// }
+// else {
+//   digitalWrite(LinacA, LOW);
+//   digitalWrite(LinacB, LOW);
+// }
+
+if ((xValue < xRestMax) && (xValue > xRestMin) && (yValue < yRestMax) && (yValue > yRestMin)){ //Joystick Resting Value Ranges
+
+//if ((digitalRead(ForwardButton) == HIGH) || (digitalRead(RightButton) == HIGH) || (digitalRead(LeftButton) == HIGH) || (digitalRead(BackButton) == HIGH)){
+//for (int i = 1; i < MaxMotorSpeed; ++i) {
+//    analogWrite(ButtonMotorSpeed, i);
+//    delay(10);
+//    Serial.println(i);
+//  }
+
+if (Forward == HIGH) {
+   digitalWrite(motor1a, LOW);
+   analogWrite(motor1b, ButtonMotorSpeed); //WIP
+   digitalWrite(motor2a, LOW);
+   analogWrite(motor2b, ButtonMotorSpeed);
+}
+  else if (Right == HIGH) {
+     digitalWrite(motor1a, LOW);
+     analogWrite(motor1b, ButtonMotorSpeed); //WIP
+     digitalWrite(motor2a, LOW);
+     analogWrite(motor2b, ButtonMotorSpeed);
+     Serial.println("WORk");
+   if (RealLinacPos < LinacExtendMax){
+       digitalWrite(LinacA, LOW);
+       digitalWrite(LinacB, HIGH);
+       analogWrite(ENA, 255);
+  }}
+    else if (Left == HIGH) {
+      digitalWrite(motor1a, LOW);
+       analogWrite(motor1b, ButtonMotorSpeed); //WIP
+      digitalWrite(motor2a, LOW);
+       analogWrite(motor2b, ButtonMotorSpeed);
+     if (RealLinacPos > LinacExtendMin){ 
+         digitalWrite(LinacA, HIGH);
+         digitalWrite(LinacB, LOW);
+         analogWrite(ENA, 255);
+    }}
+       else if (Back == HIGH) {
+         digitalWrite(motor1a, ButtonMotorSpeed);
+         analogWrite(motor1b, LOW);
+         digitalWrite(motor2a, ButtonMotorSpeed);
+         analogWrite(motor2b, LOW);
+      }
+}
+  else {
+   digitalWrite(motor1a, LOW);
+   digitalWrite(motor1b, LOW);
+   digitalWrite(motor2a, LOW);
+   digitalWrite(motor2b, LOW); 
+   analogWrite(i, 1);
+  }
 //Ultrasound Sensors
 // //if (UltrasoundButton == 1){
 // digitalWrite(Ultra1Trig, LOW);
@@ -329,8 +446,7 @@ else {
 // }
 
 //change these which one is which
-Ultrasound ultra_front(Ultra1Echo, Ultra1Trig);
-Ultrasound ultra_back(Ultra2Echo, Ultra2Trig);
+
 
 //head array
 // Ultrasound ultra_left(ultra_left_echo, ultra_left_trig);
@@ -338,25 +454,13 @@ Ultrasound ultra_back(Ultra2Echo, Ultra2Trig);
 // Ultrasound ultra_fender(ultra_fender_echo, ultra_fender_trig);
 
 // Ultrasound my_ultrasounds[] = {ultra_front, ultra_back, ultra_left, ultra_right, ultra_fender};
-Ultrasound my_ultrasounds[] = {ultra_front, ultra_back};
 
-float ultra_distance;
 
-for (int i = 0; i <= 1; i++) {
-  if (my_ultrasounds[i].proximity_fb()) {
-    if (i == 0) {
-      ProxFront = 1;
-    } else {
-      ProxBack = 1;
-    }
-  } else {
-    if (i == 0) {
-      ProxFront = 0;
-    } else {
-      ProxBack = 0;
-    }
-  }
-}
+ProxFront = get_distance(ultra_front);
+ProxBack = get_distance(ultra_back);
+
+Serial.println(digitalRead(UltrasoundButton));
+
 
 // float distance_values[];
 
@@ -400,6 +504,8 @@ if (StopStatus == 1) {
   digitalWrite(StopLED, LOW);
 }
 
-Serial.println(duration1);
+
+// Serial.println(duration1);
+  delay(20);
 }
 

@@ -1,0 +1,7 @@
+{
+    "configuration": "cpu=atmega2560",
+    "board": "arduino:avr:mega",
+    "sketch": "BabyCarV5.1.1Code copy/BabyCarV5.1.1Code.ino",
+    "port": "/dev/tty.wlan-debug",
+    "programmer": "avrisp"
+}

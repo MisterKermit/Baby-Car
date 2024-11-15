@@ -141,8 +141,8 @@ class Ultrasound {
     void init() {
       pinMode(echo_pin, INPUT);
       pinMode(trigger_pin, OUTPUT);
-      Serial.begin(9600)
-      update();
+      // Serial.begin(9600);
+      // update();
     }
       
     int update() {
@@ -165,13 +165,14 @@ class Ultrasound {
 
       // Calculating the distance
       distance = duration * 0.034 / 2;
+      // Serial.println(distance);
       return distance;
     }
 
-    int get_distance() {
-      
-      Serial.println(update());
-      return update();
+    int get_distance_head() {
+      int distance = update();
+      // Serial.println(update());
+      return distance;
     }
 
     bool proximity_fb() {
@@ -183,7 +184,7 @@ Ultrasound ultra_front(Ultra1Echo, Ultra1Trig);
 Ultrasound ultra_back(Ultra2Echo, Ultra2Trig);
 Ultrasound ultra_left(ultra_left_echo, ultra_left_trig);
 
-Ultrasound my_ultrasounds[] = {ultra_front, ultra_back, ultra_left};
+Ultrasound my_ultrasounds[] = {ultra_left};
 
 void setup() {
   //Motors
@@ -403,7 +404,7 @@ if (Forward == HIGH && ProxBack == 0) {
 // Serial.println(ProxBack);
 // Serial.println(digitalRead(UltrasoundButton));
 
-int distance_values[] = {my_ultrasounds[2].get_distance()};
+int distance_values[] = {my_ultrasounds[0].get_distance_head()};
 
 
 // distance_values[0] = my_ultrasounds[0].get_distance();
@@ -417,7 +418,7 @@ int distance_values[] = {my_ultrasounds[2].get_distance()};
 
 // float distance_chosen = min(min(distance_values[0], distance_values[1]), distance_values[2]);
 int distance_chosen = distance_values[0];
-Serial.println(distance_values[0]);
+// Serial.println(distance_values[0]);
 // put threshold
 if (distance_chosen < 10 && StopStatus == 0 && UltrasoundButton == 1) {
   if (distance_chosen == distance_values[0]) {

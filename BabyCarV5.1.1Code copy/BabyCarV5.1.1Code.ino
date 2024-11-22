@@ -12,8 +12,8 @@ avrdude: stk500v2_getsync(): timeout communicating with programmer
 #define motor1a 2
 #define motor1b 3
 
-// #define motor2a 2
-// #define motor2b 3
+#define motor2a 2
+#define motor2b 3
 
 #define LinacA 10
 #define LinacB 11
@@ -90,6 +90,13 @@ int Back;
 
 int ButtonMotorSpeed = 10;
 int i;
+
+enum head_array_state {
+  LEFT,
+  RIGHT,
+  BACK,
+  NONE
+}  head_array_state;
 
 //change values
 // int ultra_left_trig =
@@ -308,17 +315,20 @@ int distance_values[] = { my_ultrasounds[2].get_dist() };
 
   // float distance_chosen = min(min(distance_values[0], distance_values[1]), distance_values[2]);
   int distance_chosen = distance_values[0];
-  Serial.println(distance_chosen);
+  
+  // Serial.println(distance_chosen);
   // put threshold
-  if (distance_chosen < 10) {
-    if (distance_chosen == distance_values[0]) {
-      
-      Serial.println("back");
-    } else if (distance_chosen == distance_values[1]) {
+  if (distance_chosen < 10 && digitalRead(UltrasoundButton) == 1) {
+    if (distance_chosen == distance_values[0] && ProxFront == 0) {
+      head_array_state = LEFT;
+     } else if (distance_chosen == distance_values[1]) {
+      head_array_state = BACK;
       Serial.println("front");
     } else if (distance_chosen == distance_values[2]) {
+      head_array_state = RIGHT;
       Serial.println("left");
     } else {
+      head_array_state = NONE;
       Serial.println("none");
     }
   }
@@ -338,7 +348,7 @@ int distance_values[] = { my_ultrasounds[2].get_dist() };
   }
 
   //Joystick Steering Controls
-  if ((xValue < xRestMax) && (xValue > xRestMin) && (digitalRead(ForwardButton) == LOW) && (digitalRead(RightButton) == LOW) && (digitalRead(LeftButton) == LOW) && (digitalRead(BackButton) == LOW)) {
+  if ((xValue < xRestMax) && (xValue > xRestMin) && (digitalRead(ForwardButton) == LOW) && (digitalRead(RightButton) == LOW) && (digitalRead(LeftButton) == LOW) && (digitalRead(BackButton) == LOW) || distance_chosen < 10) {
     if ((RealLinacPos < LinacRestMax) && (RealLinacPos > LinacRestMin)) {
       digitalWrite(LinacA, LOW);
       digitalWrite(LinacB, LOW);
@@ -362,18 +372,18 @@ int distance_values[] = { my_ultrasounds[2].get_dist() };
   }
 
   //End of Linear Actuator No Input Commands
-  // else if ((xValue > RealLinacPos) && (xValue > xRestMax) && (StopStatus == 0)) {
-  //   digitalWrite(LinacA, HIGH);
-  //   digitalWrite(LinacB, LOW);
-  // }
-  // else if ((xValue < RealLinacPos) && (xValue < xRestMin) && (StopStatus == 0)) {
-  //   digitalWrite(LinacA, LOW);
-  //   digitalWrite(LinacB, HIGH);
-  // }
-  // else {
-  //   digitalWrite(LinacA, LOW);
-  //   digitalWrite(LinacB, LOW);
-  // }
+  else if ((xValue > RealLinacPos) && (xValue > xRestMax) && (StopStatus == 0)) {
+    digitalWrite(LinacA, HIGH);
+    digitalWrite(LinacB, LOW);
+  }
+  else if ((xValue < RealLinacPos) && (xValue < xRestMin) && (StopStatus == 0)) {
+    digitalWrite(LinacA, LOW);
+    digitalWrite(LinacB, HIGH);
+  }
+  else {
+    digitalWrite(LinacA, LOW);
+    digitalWrite(LinacB, LOW);
+  }
 
   // if ((xValue < xRestMax) && (xValue > xRestMin) && (yValue < yRestMax) && (yValue > yRestMin)){ //Joystick Resting Value Ranges
 
@@ -383,11 +393,11 @@ int distance_values[] = { my_ultrasounds[2].get_dist() };
     }
   }
 
-  if (Forward == HIGH && ProxBack == 0 && distance_chosen < 10) {
+  if (Forward == HIGH && ProxFront == 0 || head_array_state == BACK) {
     analogWrite(motor1a, ButtonMotorSpeed);
     digitalWrite(motor1b, LOW);  //WIP
 
-  } else if (Right == HIGH && ProxBack == 0) {
+  } else if (Right == HIGH && ProxFront == 0 || head_array_state == RIGHT) {
     analogWrite(motor1a, ButtonMotorSpeed);
     digitalWrite(motor1b, LOW);  //WIP
       //  Serial.println("WORk");
@@ -396,7 +406,7 @@ int distance_values[] = { my_ultrasounds[2].get_dist() };
       digitalWrite(LinacB, HIGH);
       analogWrite(ENA, 255);
     }
-  } else if (Left == HIGH && ProxBack == 0 || distance_chosen < 10) {
+  } else if (Left == HIGH && ProxFront == 0 || head_array_state == LEFT) {
     analogWrite(motor1a, ButtonMotorSpeed);
     digitalWrite(motor1b, LOW);  //WIP
     if (RealLinacPos > LinacExtendMin) {
@@ -404,7 +414,7 @@ int distance_values[] = { my_ultrasounds[2].get_dist() };
       digitalWrite(LinacB, LOW);
       analogWrite(ENA, 255);
     }
-  } else if (Back == HIGH && ProxFront == 0) {
+  } else if (Back == HIGH && ProxBack == 0) {
     digitalWrite(motor1a, LOW);
     analogWrite(motor1b, ButtonMotorSpeed);
   } else {
@@ -449,6 +459,5 @@ int distance_values[] = { my_ultrasounds[2].get_dist() };
   }
 
 
-  // Serial.println(duration1);
   delay(20);
 }

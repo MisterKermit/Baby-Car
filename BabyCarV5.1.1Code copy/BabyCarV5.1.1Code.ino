@@ -45,6 +45,7 @@ avrdude: stk500v2_getsync(): timeout communicating with programmer
 #define StopButton 35
 #define StopLED 37
 
+
 int xValue = 0;
 int yValue = 0;
 
@@ -232,10 +233,10 @@ void setup() {
 
   xRestMin = 375;
   xRestMax = 455;
-  LinacRestMin = 415;
-  LinacRestMax = 425;
-  LinacExtendMax = 1020;
-  LinacExtendMin = 4;
+  LinacRestMin = 50;
+  LinacRestMax = 392;
+  LinacExtendMax = 392;
+  LinacExtendMin = 50;
 
 
 
@@ -289,7 +290,7 @@ void loop() {
 
   RealLinacPos = analogRead(LinacPosPin);
   //Serial.print("Linear Actuator Position:");
-  // Serial.println(RealLinacPos);
+  Serial.println(RealLinacPos);
   //Serial.println(NegativeyValue);
   Forward = digitalRead(ForwardButton);
   Right = digitalRead(RightButton);
@@ -321,16 +322,23 @@ int distance_values[] = { my_ultrasounds[2].get_dist() };
   if (distance_chosen < 10 && digitalRead(UltrasoundButton) == 1) {
     if (distance_chosen == distance_values[0] && ProxFront == 0) {
       head_array_state = LEFT;
-     } else if (distance_chosen == distance_values[1]) {
+      Serial.println("left");
+    if (RealLinacPos > LinacExtendMin) {
+      digitalWrite(LinacA, HIGH);
+      digitalWrite(LinacB, LOW);
+    }
+    } else if (distance_chosen == distance_values[1]) {
       head_array_state = BACK;
       Serial.println("front");
     } else if (distance_chosen == distance_values[2]) {
       head_array_state = RIGHT;
-      Serial.println("left");
+      Serial.println("right");
     } else {
       head_array_state = NONE;
       Serial.println("none");
     }
+  } else {
+    // Serial.println("join the glorius ovulation");
   }
   // Serial.println(ProxFront);
 
@@ -348,42 +356,42 @@ int distance_values[] = { my_ultrasounds[2].get_dist() };
   }
 
   //Joystick Steering Controls
-  if ((xValue < xRestMax) && (xValue > xRestMin) && (digitalRead(ForwardButton) == LOW) && (digitalRead(RightButton) == LOW) && (digitalRead(LeftButton) == LOW) && (digitalRead(BackButton) == LOW) || distance_chosen < 10) {
-    if ((RealLinacPos < LinacRestMax) && (RealLinacPos > LinacRestMin)) {
-      digitalWrite(LinacA, LOW);
-      digitalWrite(LinacB, LOW);
-    } else if (RealLinacPos < 512) {
-      digitalWrite(LinacA, LOW);
-      digitalWrite(LinacB, HIGH);
-      analogWrite(ENA, 255);
-    } else if (RealLinacPos > 512) {
-      digitalWrite(LinacA, HIGH);
-      digitalWrite(LinacB, LOW);
-      analogWrite(ENA, 255);
-    }  //End of Linear Actuator No Input Commands
-  } else if ((xValue > RealLinacPos) && (xValue > xRestMax)) {
-    digitalWrite(LinacA, LOW);
-    digitalWrite(LinacB, HIGH);
-    analogWrite(ENA, 255);
-  } else if ((xValue < RealLinacPos) && (xValue < xRestMin)) {
-    digitalWrite(LinacA, HIGH);
-    digitalWrite(LinacB, LOW);
-    analogWrite(ENA, 255);
-  }
+  // if ((xValue < xRestMax) && (xValue > xRestMin) && (digitalRead(ForwardButton) == LOW) && (digitalRead(RightButton) == LOW) && (digitalRead(LeftButton) == LOW) && (digitalRead(BackButton) == LOW) || distance_chosen < 10) {
+  //   if ((RealLinacPos < LinacRestMax) && (RealLinacPos > LinacRestMin)) {
+  //     digitalWrite(LinacA, LOW);
+  //     digitalWrite(LinacB, LOW);
+  //   } else if (RealLinacPos < 221) {
+  //     digitalWrite(LinacA, LOW);
+  //     digitalWrite(LinacB, HIGH);
+  //     analogWrite(ENA, 255);
+  //   } else if (RealLinacPos > 221) {
+  //     digitalWrite(LinacA, HIGH);
+  //     digitalWrite(LinacB, LOW);
+  //     analogWrite(ENA, 255);
+  //   }  //End of Linear Actuator No Input Commands
+  // } else if ((xValue > RealLinacPos) && (xValue > xRestMax)) {
+  //   digitalWrite(LinacA, LOW);
+  //   digitalWrite(LinacB, HIGH);
+  //   analogWrite(ENA, 255);
+  // } else if ((xValue < RealLinacPos) && (xValue < xRestMin)) {
+  //   digitalWrite(LinacA, HIGH);
+  //   digitalWrite(LinacB, LOW);
+  //   analogWrite(ENA, 255);
+  // }
 
-  //End of Linear Actuator No Input Commands
-  else if ((xValue > RealLinacPos) && (xValue > xRestMax) && (StopStatus == 0)) {
-    digitalWrite(LinacA, HIGH);
-    digitalWrite(LinacB, LOW);
-  }
-  else if ((xValue < RealLinacPos) && (xValue < xRestMin) && (StopStatus == 0)) {
-    digitalWrite(LinacA, LOW);
-    digitalWrite(LinacB, HIGH);
-  }
-  else {
-    digitalWrite(LinacA, LOW);
-    digitalWrite(LinacB, LOW);
-  }
+  // //End of Linear Actuator No Input Commands
+  // else if ((xValue > RealLinacPos) && (xValue > xRestMax) && (StopStatus == 0)) {
+  //   digitalWrite(LinacA, HIGH);
+  //   digitalWrite(LinacB, LOW);
+  // }
+  // else if ((xValue < RealLinacPos) && (xValue < xRestMin) && (StopStatus == 0)) {
+  //   digitalWrite(LinacA, LOW);
+  //   digitalWrite(LinacB, HIGH);
+  // }
+  // else {
+  //   digitalWrite(LinacA, LOW);
+  //   digitalWrite(LinacB, LOW);
+  // }
 
   // if ((xValue < xRestMax) && (xValue > xRestMin) && (yValue < yRestMax) && (yValue > yRestMin)){ //Joystick Resting Value Ranges
 
@@ -393,36 +401,35 @@ int distance_values[] = { my_ultrasounds[2].get_dist() };
     }
   }
 
-  if (Forward == HIGH && ProxFront == 0 || head_array_state == BACK) {
-    analogWrite(motor1a, ButtonMotorSpeed);
-    digitalWrite(motor1b, LOW);  //WIP
+  // if (Forward == HIGH && ProxFront == 0 || head_array_state == BACK) {
+  //   analogWrite(motor1a, ButtonMotorSpeed);
+  //   digitalWrite(motor1b, LOW);  //WIP
 
-  } else if (Right == HIGH && ProxFront == 0 || head_array_state == RIGHT) {
-    analogWrite(motor1a, ButtonMotorSpeed);
-    digitalWrite(motor1b, LOW);  //WIP
-      //  Serial.println("WORk");
-    if (RealLinacPos < LinacExtendMax) {
-      digitalWrite(LinacA, LOW);
-      digitalWrite(LinacB, HIGH);
-      analogWrite(ENA, 255);
-    }
-  } else if (Left == HIGH && ProxFront == 0 || head_array_state == LEFT) {
-    analogWrite(motor1a, ButtonMotorSpeed);
-    digitalWrite(motor1b, LOW);  //WIP
-    if (RealLinacPos > LinacExtendMin) {
-      digitalWrite(LinacA, HIGH);
-      digitalWrite(LinacB, LOW);
-      analogWrite(ENA, 255);
-    }
-  } else if (Back == HIGH && ProxBack == 0) {
-    digitalWrite(motor1a, LOW);
-    analogWrite(motor1b, ButtonMotorSpeed);
-  } else {
-    digitalWrite(motor1a, LOW);
-    digitalWrite(motor1b, LOW);
-    // analogWrite(i, 1);
-    ButtonMotorSpeed = 1;
-  }
+  // } else if (Right == HIGH && ProxFront == 0 || head_array_state == RIGHT) {
+  //   analogWrite(motor1a, ButtonMotorSpeed);
+  //   digitalWrite(motor1b, LOW);  //WIP
+  //     //  Serial.println("WORk");
+  //   if (RealLinacPos < LinacExtendMax) {
+  //     digitalWrite(LinacA, HIGH);
+  //     digitalWrite(LinacB, LOW);
+  //     analogWrite(ENA, 255);
+  //   }
+  // } else if ((Left == HIGH && ProxFront == 0) || head_array_state == LEFT) {
+    // analogWrite(motor1a, ButtonMotorSpeed);
+    // digitalWrite(motor1b, LOW);  //WIP
+    // if (RealLinacPos > LinacExtendMin) {
+    //   digitalWrite(LinacA, LOW);
+    //   digitalWrite(LinacB, HIGH);
+    // }
+  // } else if (Back == HIGH && ProxBack == 0) {
+  //   digitalWrite(motor1a, LOW);
+  //   analogWrite(motor1b, ButtonMotorSpeed);
+  // } else {
+  //   digitalWrite(motor1a, LOW);
+  //   digitalWrite(motor1b, LOW);
+  //   // analogWrite(i, 1);
+  //   ButtonMotorSpeed = 1;
+  // }
 
 
 
